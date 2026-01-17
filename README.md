@@ -46,6 +46,7 @@ The project emphasizes low-level hardware interaction, protocol understanding, a
 ---
 
 ## Project Structure
+```text
 .
 ├── src/
 │   ├── main.c              # Application logic
@@ -53,6 +54,7 @@ The project emphasizes low-level hardware interaction, protocol understanding, a
 │   └── lcd_pcf8574.h       # LCD driver interface
 ├── CMakeLists.txt
 └── README.md
+```
 
 ## Planned Next Steps
 - Integrate AHT20 temperature & humidity sensor (I²C)
