@@ -7,21 +7,6 @@
 #define SDA_PIN 4
 #define SCL_PIN 5
 
-static void read_aht20_placeholder(float *temp_c, float *hum_pct)
-{
-    // Placeholder until your AHT20 arrives
-    static float t = 22.5f;
-    static float h = 45.0f;
-    t += 0.1f;
-    if (t > 24.0f)
-        t = 22.5f;
-    h += 0.2f;
-    if (h > 55.0f)
-        h = 45.0f;
-    *temp_c = t;
-    *hum_pct = h;
-}
-
 int main()
 {
     stdio_init_all();
@@ -54,7 +39,6 @@ int main()
         // 16-char lines (pad with spaces to overwrite old characters)
         snprintf(line1, sizeof(line1), "Temp: %4.1f C   ", temp);
         snprintf(line2, sizeof(line2), "Hum : %4.1f %%   ", humidity);
-
 
         lcd_set_cursor(0, 0);
         lcd_print(line1);
