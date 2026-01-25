@@ -1,22 +1,30 @@
-#pragma once
+/**
+ * @file lcd_pcf8574.h
+ * @brief HD44780 LCD driver via PCF8574 I2C expander
+ */
+
+#ifndef LCD_PCF8574_H
+#define LCD_PCF8574_H
+
 #include <stdint.h>
 #include "hardware/i2c.h"
+#include <stdbool.h>
 
-// Change these if you used different pins/port
+// I2C configuration
 #define LCD_I2C_PORT i2c0
+#define LCD_ADDR 0x27 ///< PCF8574 I2C address (A0-A2 low)
 
-// Change this to your scan result (common: 0x27 or 0x3F)
-#define LCD_ADDR 0x27
+// PCF8574 pin mapping to LCD
+#define LCD_RS_BIT 0x01        // P0: Register Select
+#define LCD_ENABLE_BIT 0x04    // P2: Enable pulse
+#define LCD_BACKLIGHT_BIT 0x08 // P3: Backlight control
 
-// Common PCF8574 -> LCD mapping:
-// P0=RS, P1=RW, P2=E, P3=Backlight, P4=D4, P5=D5, P6=D6, P7=D7
-#define LCD_BACKLIGHT_BIT 0x08
-#define LCD_ENABLE_BIT 0x04
-#define LCD_RW_BIT 0x02
-#define LCD_RS_BIT 0x01
-
+// Public API
 void lcd_init(void);
 void lcd_clear(void);
 void lcd_home(void);
 void lcd_set_cursor(uint8_t col, uint8_t row);
 void lcd_print(const char *s);
+void lcd_backlight(bool on);
+
+#endif // LCD_PCF8574_H
