@@ -1,20 +1,48 @@
+// dht20.c
+// Driver for the DHT20 I2C temperature and humidity sensor
+//
+// dht20_init(): Perform soft reset and prepare sensor for reading.
+// dht20_read(): Initiate a measurement and read the humidity/temperature.
+
 #include "dht20.h"
 #include "pico/stdlib.h"
 
 
-uint8_t DHT20_start_commands[3] = {0xAC, 0x33, 0x00};
+#define DHT20_MEASUREMENT_DELAY_MS 80
 
 
+static const uint8_t DHT20_start_commands[3] = {0xAC, 0x33, 0x00};
+
+// dht20_init
+// Performs a soft reset to initialize the DHT20 sensor
+// Call once before using dht20_read()
 void dht20_init(void) {
     uint8_t soft_reset[] = {0xBA};  // from AHT20 docs
     i2c_write_blocking(DHT20_PORT, DHT20_ADDR, soft_reset, 1, false);
     sleep_ms(20);  // time required to soft reset does not exceed 20ms
 }
 
+
+// dht20_read
+// Reads humidity and temperature values from the DHT20 sensor
+//
+// Parameters:
+//  humidity - Output pointer for humidity in percent (0-100)
+//  temperature - Output pointer for temperature in Celsius
+//
+// Returns:
+//  0 - Success
+//  1 - if humidity or temp is NULL
+//  2 - if the read failed or otherwise wasn't completed
+//  3 - if the sensor is busy
 int dht20_read(float *humidity, float *temp) {
-    // send wakup command to the sensor
+    if (!humidity || !temp) {
+        return -1; // Invalid parameters
+    }
+
+    // send wakeup command to the sensor
     i2c_write_blocking(DHT20_PORT, DHT20_ADDR, DHT20_start_commands, 3, false);
-    sleep_ms(80);       // DHT20 needs 80ms
+    sleep_ms(DHT20_MEASUREMENT_DELAY_MS);       // DHT20 needs 80ms
 
     // Response is 7 bytes:
         // first byte is status
@@ -23,6 +51,15 @@ int dht20_read(float *humidity, float *temp) {
         // last byte is CRC data
     uint8_t sensor_data[7];
     int result = i2c_read_blocking(DHT20_PORT, DHT20_ADDR, sensor_data, 7, false);
+
+    if (result != 7) {
+        return -2; // I2C read failed
+    }
+
+    // Check if sensor is busy (bit 7 should be 0 when ready)
+    if (sensor_data[0] & 0x80) {
+        return -3; // Sensor busy
+    }
 
     // Extract the raw values
     // store in 32-bit variables
