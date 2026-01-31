@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "lcd_pcf8574.h"
-#include "drivers/led.h"
-#include "dht20.h"
+#include "drivers/dht20.h"
+#include "ui/ui.h"
 
 #define SDA_PIN 4
 #define SCL_PIN 5
@@ -19,15 +18,10 @@ int main()
     gpio_pull_up(SDA_PIN);
     gpio_pull_up(SCL_PIN);
 
-    lcd_init();
-    led_init();
-
     dht20_init();
+    ui_init();
 
-    lcd_set_cursor(0, 0);
-    lcd_print("Env Monitor");
-    lcd_set_cursor(0, 1);
-    lcd_print("Starting...");
+    ui_startup(); 
     sleep_ms(1200);
 
     while (true)
@@ -35,30 +29,7 @@ int main()
         float humidity, temp;
         dht20_read(&humidity, &temp);
 
-        char line1[17];
-        char line2[17];
-
-        // 16-char lines (pad with spaces to overwrite old characters)
-        snprintf(line1, sizeof(line1), "Temp: %4.1f C   ", temp);
-        snprintf(line2, sizeof(line2), "Hum : %4.1f %%   ", humidity);
-
-        lcd_set_cursor(0, 0);
-        lcd_print(line1);
-        lcd_set_cursor(0, 1);
-        lcd_print(line2);
-
-        // test led array
-        for (uint8_t i = 0; i < NUM_LEDS; i++)
-        {
-            led_on(leds[i]);
-            sleep_ms(500);
-        }
-
-        for (uint8_t i = 0; i < NUM_LEDS; i++)
-        {
-            led_off(leds[i]);
-        }
-
+        ui_update(humidity, temp);
         sleep_ms(1000);
     }
 }

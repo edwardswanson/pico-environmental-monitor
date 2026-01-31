@@ -26,9 +26,10 @@ pico_sdk_init()
 
 add_executable(lcd_demo
     src/main.c
-    src/lcd_pcf8574.c
+    src/drivers/lcd_pcf8574.c
     src/drivers/led.c
-    src/dht20.c
+    src/drivers/dht20.c
+    src/ui/ui.c
 )
 
 target_link_libraries(lcd_demo pico_stdlib hardware_i2c)
