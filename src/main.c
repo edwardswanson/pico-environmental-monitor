@@ -19,9 +19,10 @@ int main()
     gpio_pull_up(SCL_PIN);
 
     dht20_init();
-    ui_init();
 
+    ui_init();
     ui_startup(); 
+
     sleep_ms(1200);
 
     while (true)
