@@ -1,3 +1,9 @@
+/**
+ * @file dht20.c
+ * @brief DHT20 temperature and humidity sensor driver
+ *
+ */
+
 #include "dht20.h"
 #include "pico/stdlib.h"
 
