@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "ui.h"
 
 /**
@@ -7,10 +8,25 @@
  */
 static void update_led_array(float humidity)
 {
-    for (uint8_t i = 0; i < (uint8_t)humidity; i += 20)
+    // convert humidity to number of LEDs
+    uint8_t num_leds_on = (int)ceil(((humidity / 100.0f) * 5));
+    
+    uint8_t i = 0;
+
+    // set appropriate leds on
+    for (; i < num_leds_on; i++)
     {
         led_on(leds[i]);
     }
+
+    // clear remaining leds
+    for (; i < NUM_LEDS; i++)
+    {
+        led_off(leds[i]);
+    }
+
+    // set 6th led if humidity is 100%
+    if (humidity >= 100.0f) led_on(leds[NUM_LEDS - 1]);
 }
 
 /**

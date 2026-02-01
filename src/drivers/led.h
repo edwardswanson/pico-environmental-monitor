@@ -1,3 +1,9 @@
+/**
+ * @file led.h
+ * @brief led driver for 6 stage led_array
+ *
+ */
+
 #include "pico/stdlib.h"
 
 extern const uint8_t leds[];

@@ -1,3 +1,9 @@
+/**
+ * @file led.c
+ * @brief led driver for 6 stage led_array
+ *
+ */
+
 #include "led.h"
 
 const uint8_t leds[] = {10, 11, 12, 13, 14, 15};
