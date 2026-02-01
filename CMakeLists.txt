@@ -30,6 +30,7 @@ add_executable(lcd_demo
     src/drivers/led.c
     src/drivers/dht20.c
     src/ui/ui.c
+    src/tools/command/command_interface.c
 )
 
 target_link_libraries(lcd_demo pico_stdlib hardware_i2c)

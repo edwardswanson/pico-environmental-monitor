@@ -3,6 +3,7 @@
 #include "hardware/i2c.h"
 #include "drivers/dht20.h"
 #include "ui/ui.h"
+#include "tools/command/command_interface.h"
 
 #define SDA_PIN 4
 #define SCL_PIN 5
@@ -21,6 +22,7 @@ int main()
     dht20_init();
 
     ui_init();
+    cmd_init();
     ui_startup(); 
 
     sleep_ms(1200);
@@ -28,9 +30,22 @@ int main()
     while (true)
     {
         float humidity, temp;
-        dht20_read(&humidity, &temp);
-
+        
+        // Check for serial commands (non-blocking)
+        cmd_process();
+        
+        // Get sensor readings or use mock values
+        if (cmd_is_mock_mode()) {
+            // Use mock values
+            cmd_get_mock_values(&humidity, &temp);
+        } else {
+            // Use real sensor
+            dht20_read(&humidity, &temp);
+        }
+        
+        // Update UI with current values
         ui_update(humidity, temp);
+        
         sleep_ms(1000);
     }
 }
