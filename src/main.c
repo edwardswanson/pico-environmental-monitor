@@ -31,19 +31,20 @@ int main()
 
     sleep_ms(1200);
 
+    led_on(leds[0]); 
     while (true)
     {
         float humidity, temp;
         
-        // // Check for serial commands (non-blocking)
-        // cmd_process();
-        
+        // Check for serial commands (non-blocking)
+        cmd_process();
+
         // Get sensor readings or use mock values
-        if (sensor_data_ready()) {
-            read_sensor_data(&humidity, &temp);
+        if (read_sensor_data(&humidity, &temp))
+        {
             ui_update(humidity, temp);
         }
-        
+
         sleep_ms(1);
     }
 }

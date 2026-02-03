@@ -34,7 +34,11 @@ add_executable(lcd_demo
     src/app/sensor_task.c
 )
 
-target_link_libraries(lcd_demo pico_stdlib hardware_i2c)
+target_link_libraries(lcd_demo 
+    pico_stdlib 
+    hardware_i2c
+    hardware_timer
+)
 
 pico_enable_stdio_usb(lcd_demo 1)
 pico_enable_stdio_uart(lcd_demo 0)

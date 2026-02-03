@@ -4,7 +4,7 @@
 
 void sensor_task_init();
 bool sensor_data_ready();
-void read_sensor_data(float* humidity, float* temp);
+bool read_sensor_data(float* humidity, float* temp);
 void set_humidity(float new_humidity);
 void set_temp(float new_temp);
 void mock_sensor(bool mock_on);
