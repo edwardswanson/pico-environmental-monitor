@@ -3,6 +3,7 @@
 #include "hardware/i2c.h"
 #include "lcd_pcf8574.h"
 #include "dht20.h"
+#include "command_interface.h"
 
 #define SDA_PIN 4
 #define SCL_PIN 5
@@ -19,8 +20,8 @@ int main()
     gpio_pull_up(SCL_PIN);
 
     lcd_init();
-
     dht20_init();
+    command_interface_init();
 
     lcd_set_cursor(0, 0);
     lcd_print("Env Monitor");
@@ -30,14 +31,21 @@ int main()
 
     while (true)
     {
-        float humidity, temp;
-        dht20_read(&humidity, &temp);
+        // Check for serial commands (non-blocking)
+        command_interface_update();
+
+        float humidity, temp_celsius;
+        dht20_read(&humidity, &temp_celsius);
+
+        // Convert temperature based on user preference
+        float temp_display = command_interface_convert_temp(temp_celsius);
+        const char *unit = command_interface_get_unit_symbol();
 
         char line1[17];
         char line2[17];
 
         // 16-char lines (pad with spaces to overwrite old characters)
-        snprintf(line1, sizeof(line1), "Temp: %4.1f C   ", temp);
+        snprintf(line1, sizeof(line1), "Temp: %4.1f %s   ", temp_display, unit);
         snprintf(line2, sizeof(line2), "Hum : %4.1f %%   ", humidity);
 
         lcd_set_cursor(0, 0);
