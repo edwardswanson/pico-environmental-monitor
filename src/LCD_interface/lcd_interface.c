@@ -1,3 +1,25 @@
+/*
+ * lcd_interface.c
+ *
+ * LCD interface for the Pico Environmental Monitor.
+ * This module handles the display of temperature and humidity on the LCD.
+ *
+ * How to connect (macOS):
+ *   1) Connect the Pico via USB.
+ *   2) Open a terminal and run:
+ *        screen /dev/tty.usbmodem* 115200
+ *   3) Type commands and press Enter:
+ *        F or FAHRENHEIT  -> Fahrenheit
+ *        C or CELSIUS     -> Celsius
+ *        H or HELP        -> list commands
+ *   4) Exit screen with:
+ *        Ctrl-a then \   (confirm with y)
+ *
+ * Notes:
+ * - Commands are case-insensitive. You can use upper or lower case.
+ * - Commands are processed on newline with a slight delay, so type slowly.
+ */
+
 #include "lcd_interface.h"
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +38,13 @@ void lcd_interface_init(void)
     cmd_index = 0;
 
     printf("\n=== Pico Environmental Monitor ===\n");
-    printf("Type HELP for available commands\n\n");
+    printf("Available commands:\n");
+    printf("  F / FAHRENHEIT  -> Fahrenheit\n");
+    printf("  C / CELSIUS     -> Celsius\n");
+    printf("  H / HELP        -> list commands\n");
+    printf("  Q               -> show exit instructions\n");
+    printf("\nEnter a command and press Enter:\n\n");
+    fflush(stdout);
 }
 
 // Process a complete command
@@ -26,22 +54,33 @@ static void process_command(const char *cmd)
     {
         current_temp_unit = TEMP_FAHRENHEIT;
         printf("Temperature unit set to Fahrenheit\n");
+        fflush(stdout);
     }
     else if (strcasecmp(cmd, "C") == 0 || strcasecmp(cmd, "CELSIUS") == 0)
     {
         current_temp_unit = TEMP_CELSIUS;
         printf("Temperature unit set to Celsius\n");
+        fflush(stdout);
     }
-    else if (strcasecmp(cmd, "HELP") == 0)
+    else if (strcasecmp(cmd, "H") == 0 || strcasecmp(cmd, "HELP") == 0)
     {
         printf("\nAvailable commands:\n");
         printf("  F or FAHRENHEIT - Set temperature to Fahrenheit\n");
         printf("  C or CELSIUS    - Set temperature to Celsius\n");
-        printf("  HELP            - Show this help message\n\n");
+        printf("  H or HELP       - Show this help message\n");
+        printf("  Q               - Show exit instructions\n\n");
+        fflush(stdout);
+    }
+    else if (strcasecmp(cmd, "Q") == 0)
+    {
+        printf("\nTo exit the terminal:\n");
+        printf("  Press Ctrl-a then \\ (confirm with y)\n\n");
+        fflush(stdout);
     }
     else if (strlen(cmd) > 0)
     {
         printf("Unknown command: '%s' (type HELP for available commands)\n", cmd);
+        fflush(stdout);
     }
 }
 
