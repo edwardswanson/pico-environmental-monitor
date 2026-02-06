@@ -9,6 +9,7 @@
 #include "lcd_pcf8574.h"
 #include "pico/stdlib.h"
 #include <string.h>
+#include <stdio.h>
 
 // Timing constants (per HD44780 datasheet)
 #define LCD_POWER_ON_DELAY_MS 50 ///< Power-up stabilization time
