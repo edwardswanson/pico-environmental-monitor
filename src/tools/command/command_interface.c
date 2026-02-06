@@ -4,13 +4,10 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 
+#include "../../app/sensor_task.h"
+
 #define CMD_BUFFER_SIZE 128
 #define MAX_COMMANDS 16
-
-// Mock mode state
-static bool mock_mode_enabled = false;
-static float mock_humidity = 50.0f;
-static float mock_temp = 25.0f;
 
 // Command buffer for serial input
 static char cmd_buffer[CMD_BUFFER_SIZE];
@@ -30,7 +27,6 @@ static void cmd_mock_temp(const char *args);
 static void cmd_mock_humid(const char *args);
 static void cmd_mock_off(const char *args);
 static void cmd_help(const char *args);
-static void cmd_status(const char *args);
 
 void cmd_init(void)
 {
@@ -41,7 +37,6 @@ void cmd_init(void)
     cmd_register("MOCK_HUMID", cmd_mock_humid);
     cmd_register("MOCK_OFF", cmd_mock_off);
     cmd_register("HELP", cmd_help);
-    cmd_register("STATUS", cmd_status);
     
     printf("\n=== DHT20 Command Interface Ready ===\n");
     printf("Type HELP for available commands\n\n");
@@ -137,37 +132,25 @@ void cmd_process(void)
     }
 }
 
-bool cmd_is_mock_mode(void)
-{
-    return mock_mode_enabled;
-}
-
-void cmd_get_mock_values(float *humidity, float *temp)
-{
-    *humidity = mock_humidity;
-    *temp = mock_temp;
-}
-
 // Built-in command implementations
 static void cmd_mock_temp(const char *args)
 {
     if (args == NULL || *args == '\0') {
-        printf("ERROR: MOCK_TEMP requires a temperature value\n");
+        printf("\nERROR: MOCK_TEMP requires a temperature value\n");
         printf("Usage: MOCK_TEMP <value>\n");
         return;
     }
     
     float value = atof(args);
-    mock_temp = value;
-    mock_mode_enabled = true;
-    
-    printf("OK: Mock temperature set to %.2f°C (Mock mode: ON)\n", mock_temp);
+    set_temp(value);
+
+    printf("\nOK: Mock temperature set to %.2f°C (Mock mode: ON)\n", value);
 }
 
 static void cmd_mock_humid(const char *args)
 {
     if (args == NULL || *args == '\0') {
-        printf("ERROR: MOCK_HUMID requires a humidity value\n");
+        printf("\nERROR: MOCK_HUMID requires a humidity value\n");
         printf("Usage: MOCK_HUMID <value>\n");
         return;
     }
@@ -175,21 +158,17 @@ static void cmd_mock_humid(const char *args)
     float value = atof(args);
     
     if (value < 0.0f || value > 100.0f) {
-        printf("WARNING: Humidity value %.2f is outside normal range (0-100%%)\n", value);
+        printf("\nWARNING: Humidity value %.2f is outside normal range (0-100%%)\n", value);
     }
     
-    mock_humidity = value;
-    mock_mode_enabled = true;
-    
-    printf("OK: Mock humidity set to %.2f%% (Mock mode: ON)\n", mock_humidity);
+    set_humidity(value);
+    printf("\nOK: Mock humidity set to %.2f%% (Mock mode: ON)\n", value);
 }
 
 static void cmd_mock_off(const char *args)
 {
-    (void)args; // Unused
-    
-    mock_mode_enabled = false;
-    printf("OK: Mock mode disabled (using real sensor)\n");
+    mock_sensor(false);
+    printf("\nOK: Mock mode disabled (using real sensor)\n");
 }
 
 static void cmd_help(const char *args)
@@ -200,7 +179,6 @@ static void cmd_help(const char *args)
     printf("MOCK_TEMP <value>   - Set mock temperature (enables mock mode)\n");
     printf("MOCK_HUMID <value>  - Set mock humidity (enables mock mode)\n");
     printf("MOCK_OFF            - Disable mock mode (use real sensor)\n");
-    printf("STATUS              - Show current mock mode status\n");
     printf("HELP                - Show this help message\n");
     printf("\nExamples:\n");
     printf("  MOCK_TEMP 28.5\n");
@@ -209,18 +187,3 @@ static void cmd_help(const char *args)
     printf("\nCommands are case-insensitive.\n\n");
 }
 
-static void cmd_status(const char *args)
-{
-    (void)args; // Unused
-    
-    printf("\n=== System Status ===\n");
-    printf("Mock mode: %s\n", mock_mode_enabled ? "ENABLED" : "DISABLED");
-    
-    if (mock_mode_enabled) {
-        printf("Mock temperature: %.2f°C\n", mock_temp);
-        printf("Mock humidity: %.2f%%\n", mock_humidity);
-    } else {
-        printf("Using real DHT20 sensor readings\n");
-    }
-    printf("\n");
-}
