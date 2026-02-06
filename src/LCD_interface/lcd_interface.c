@@ -6,16 +6,17 @@
  *
  * How to connect (macOS):
  *   1) Connect the Pico via USB.
- *   2) Open a terminal and run:
- *        screen /dev/tty.usbmodem* 115200
+ *   2) Open a terminal and run: (requires brew install picocom)
+ *        picocom /dev/tty.usbmodem* -b 115200
  *   3) Type commands and press Enter:
  *        F or FAHRENHEIT  -> Fahrenheit
  *        C or CELSIUS     -> Celsius
  *        H or HELP        -> list commands
  *   4) Exit screen with:
- *        Ctrl-a then \   (confirm with y)
+ *        Ctrl-a -> Ctrl-x
  *
  * Notes:
+ * - Need to brew install picocom
  * - Commands are case-insensitive. You can use upper or lower case.
  * - Commands are processed on newline with a slight delay, so type slowly.
  */
@@ -74,7 +75,7 @@ static void process_command(const char *cmd)
     else if (strcasecmp(cmd, "Q") == 0)
     {
         printf("\nTo exit the terminal:\n");
-        printf("  Press Ctrl-a then \\ (confirm with y)\n\n");
+        printf("  Press Ctrl-a then Ctrl-x\n");
         fflush(stdout);
     }
     else if (strlen(cmd) > 0)

@@ -12,6 +12,7 @@
 int main()
 {
     stdio_init_all();
+    sleep_ms(2000); // Wait for stdio to initialize (especially important for USB serial)
 
     // I2C setup
     i2c_init(i2c0, 100 * 1000);
