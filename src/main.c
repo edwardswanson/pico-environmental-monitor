@@ -11,6 +11,7 @@
 int main()
 {
     stdio_init_all();
+    sleep_ms(2000); // Wait for stdio to initialize (especially important for USB serial)
 
     // I2C setup
     i2c_init(i2c0, 100 * 1000);
@@ -22,6 +23,7 @@ int main()
     lcd_init();
     dht20_init();
     command_interface_init();
+    sleep_ms(500); // give printf time to flush before main loop starts
 
     lcd_set_cursor(0, 0);
     lcd_print("Env Monitor");
