@@ -13,7 +13,7 @@ static void update_led_array(float humidity)
     if (humidity > 100.0f) humidity = 100.0f;
 
     // convert humidity to number of LEDs
-    uint8_t num_leds_on = (int)ceil(((humidity / 100.0f) * (NUM_LEDS - 1)));
+    uint8_t num_leds_on = (uint8_t)ceil(((humidity / 100.0f) * (NUM_LEDS - 1)));
     
     uint8_t i = 0;
 
