@@ -1,24 +1,28 @@
-#ifndef COMMAND_INTERFACE_H
-#define COMMAND_INTERFACE_H
+#pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
-// Command interface initialization
+// Maximum number of arguments for a command
+#define CMD_BUFFER_SIZE 128
+#define MAX_COMMANDS 32
+#define CMD_MAX_ARGS 4
+
+// Command handler function type
+typedef void (*cmd_handler_t)(const int32_t* args);
+
+// Command table entry
+typedef struct {
+    const char* name;           // Command name (e.g., "mock_temp")
+    cmd_handler_t handler;      // Function to call
+    uint8_t num_args;      // Number of arguments expected
+} cmd_entry_t;
+
+// Initialize command interface
 void cmd_init(void);
 
-// Process any pending commands (call this in your main loop)
+// Process commands (call in main loop if not using interrupts)
 void cmd_process(void);
 
-// Check if mock mode is enabled
-bool cmd_is_mock_mode(void);
-
-// Get mock values (only valid if mock mode is enabled)
-void cmd_get_mock_values(float *humidity, float *temp);
-
-// Command callback type for extensibility
-typedef void (*cmd_callback_t)(const char *args);
-
-// Register a new command (for future expansion)
-void cmd_register(const char *name, cmd_callback_t callback);
-
-#endif // COMMAND_INTERFACE_H
+// Register a command
+void cmd_register(const cmd_entry_t* command);

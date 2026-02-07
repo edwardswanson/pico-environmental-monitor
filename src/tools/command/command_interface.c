@@ -4,58 +4,95 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 
-#include "../../app/sensor_task.h"
-
-#define CMD_BUFFER_SIZE 128
-#define MAX_COMMANDS 16
-
 // Command buffer for serial input
 static char cmd_buffer[CMD_BUFFER_SIZE];
 static int cmd_buffer_pos = 0;
 
-// Command table structure
-typedef struct {
-    char name[16];
-    cmd_callback_t callback;
-} command_entry_t;
+// Command table
+static const cmd_entry_t* command_table[MAX_COMMANDS];
+static uint8_t command_count = 0;
 
-static command_entry_t command_table[MAX_COMMANDS];
-static int command_count = 0;
+// Forward declarations
+static void cmd_execute(char* cmd_line);
+static void help_handler(const int32_t* args);
 
-// Forward declarations of built-in commands
-static void cmd_mock_temp(const char *args);
-static void cmd_mock_humid(const char *args);
-static void cmd_mock_off(const char *args);
-static void cmd_help(const char *args);
+// Built-in help command
+static const cmd_entry_t help_command = {
+    .name = "help",
+    .handler = help_handler,
+    .num_args = 0,
+};
 
 void cmd_init(void)
 {
-    // stdio_init_all() should already be called in main
+    cmd_register(&help_command);
     
-    // Register built-in commands
-    cmd_register("MOCK_TEMP", cmd_mock_temp);
-    cmd_register("MOCK_HUMID", cmd_mock_humid);
-    cmd_register("MOCK_OFF", cmd_mock_off);
-    cmd_register("HELP", cmd_help);
-    
-    printf("\n=== DHT20 Command Interface Ready ===\n");
-    printf("Type HELP for available commands\n\n");
+    printf("\n=== Command Interface Ready ===\n");
+    printf("Type 'help' for available commands\n\n");
 }
 
-void cmd_register(const char *name, cmd_callback_t callback)
+void cmd_register(const cmd_entry_t* command)
 {
     if (command_count >= MAX_COMMANDS) {
-        printf("ERROR: Command table full\n");
+        printf("\nERROR: Command table full\n");
         return;
     }
     
-    strncpy(command_table[command_count].name, name, 15);
-    command_table[command_count].name[15] = '\0';
-    command_table[command_count].callback = callback;
-    command_count++;
+    command_table[command_count++] = command;
 }
 
-static void cmd_execute(char *cmd_line)
+/**
+ * Parse arguments from command string
+ * 
+ * Parses space-separated arguments and converts to integers.
+ * Supports:
+ * - Decimal: "100"
+ * - Hexadecimal: "0x64" or "0X64"
+ * - Negative: "-5"
+ * 
+ * @param input String containing arguments
+ * @param args Array to store parsed arguments
+ * @param max_args Maximum number of arguments to parse
+ * @return Number of arguments successfully parsed
+ */
+static uint8_t parse_args(char* input, int32_t args[], uint8_t max_args)
+{
+    uint8_t count = 0;
+    char* token;
+    char* saveptr;
+    
+    token = strtok_r(input, " ", &saveptr);
+    
+    while (token != NULL && count < max_args) {
+        // Try to parse as integer
+        char* endptr;
+        long value;
+        
+        // Check for hex prefix
+        if (strlen(token) > 2 && token[0] == '0' && 
+            (token[1] == 'x' || token[1] == 'X')) {
+            value = strtol(token, &endptr, 16);
+        } else {
+            value = strtol(token, &endptr, 10);
+        }
+        
+        // Check if parsing was successful
+        if (endptr != token && *endptr == '\0') {
+            args[count++] = (int32_t)value;
+        } else {
+            printf("WARNING: Could not parse '%s' as integer\n", token);
+        }
+        
+        token = strtok_r(NULL, " ", &saveptr);
+    }
+    
+    return count;
+}
+
+/**
+ * Find and execute a command
+ */
+static void cmd_execute(char* cmd_line)
 {
     // Skip leading whitespace
     while (*cmd_line == ' ' || *cmd_line == '\t') {
@@ -67,123 +104,98 @@ static void cmd_execute(char *cmd_line)
         return;
     }
     
-    // Find the end of the command name
-    char *space = strchr(cmd_line, ' ');
-    char *args = NULL;
+    // Find space or end of command name
+    char* space = strchr(cmd_line, ' ');
+    char* args_str = NULL;
     
     if (space != NULL) {
         *space = '\0';
-        args = space + 1;
-        // Skip whitespace in args
-        while (*args == ' ' || *args == '\t') {
-            args++;
+        args_str = space + 1;
+        
+        // Skip whitespace before args
+        while (*args_str == ' ' || *args_str == '\t') {
+            args_str++;
         }
     }
     
-    // Convert command to uppercase for case-insensitive matching
-    for (char *p = cmd_line; *p; p++) {
-        if (*p >= 'a' && *p <= 'z') {
-            *p = *p - 'a' + 'A';
+    // Convert command to lowercase for case-insensitive matching
+    for (char* p = cmd_line; *p; p++) {
+        if (*p >= 'A' && *p <= 'Z') {
+            *p = *p - 'A' + 'a';
         }
     }
     
     // Search command table
-    for (int i = 0; i < command_count; i++) {
-        if (strcmp(cmd_line, command_table[i].name) == 0) {
-            command_table[i].callback(args);
+    for (uint8_t i = 0; i < command_count; i++) {
+        if (strcmp(cmd_line, command_table[i]->name) == 0) {
+            // Found command - parse arguments
+            int32_t args[CMD_MAX_ARGS] = {0};
+            uint8_t num_args = 0;
+            
+            if (args_str != NULL && *args_str != '\0') {
+                num_args = parse_args(args_str, args, CMD_MAX_ARGS);
+            }
+            
+            // Validate argument count
+            if (num_args != command_table[i]->num_args) {
+                printf("\nERROR: Command '%s' expects %d arguments, got %d\n",
+                       command_table[i]->name,
+                       command_table[i]->num_args,
+                       num_args);
+                return;
+            }
+            
+            // Execute command
+            command_table[i]->handler(args);
             return;
         }
     }
     
-    printf("ERROR: Unknown command '%s'. Type HELP for available commands.\n", cmd_line);
+    // Unknown command
+    printf("\nERROR: Unknown command '%s'. Type 'help' for available commands.\n", 
+           cmd_line);
 }
 
 void cmd_process(void)
 {
-    // Non-blocking check for serial input
-    int c = getchar_timeout_us(0);
+    uint8_t chars_processed = 0;
+    char cmd_line[CMD_BUFFER_SIZE];
+    uint8_t cmd_line_pos = 0;
     
-    if (c == PICO_ERROR_TIMEOUT) {
-        return; // No character available
-    }
-    
-    if (c == '\n' || c == '\r') {
-        // End of command
-        if (cmd_buffer_pos > 0) {
-            cmd_buffer[cmd_buffer_pos] = '\0';
-            cmd_execute(cmd_buffer);
-            cmd_buffer_pos = 0;
+    // read pipe up to max characters
+    while (chars_processed < CMD_BUFFER_SIZE) 
+    {
+        int c = getchar_timeout_us(0);
+        
+        // No data
+        if (c == PICO_ERROR_TIMEOUT) {
+            return; 
         }
-        return;
-    }
-    
-    if (c == 8 || c == 127) { // Backspace or DEL
-        if (cmd_buffer_pos > 0) {
-            cmd_buffer_pos--;
-            printf("\b \b"); // Erase character on terminal
+        
+        chars_processed++;
+        
+        // process and execute command on newline/return
+        if (c == '\n' || c == '\r') 
+        {
+            cmd_line[cmd_line_pos++] = '\0';
+            cmd_execute(cmd_line);
+            return;
         }
-        return;
-    }
-    
-    // Add character to buffer
-    if (cmd_buffer_pos < CMD_BUFFER_SIZE - 1) {
-        cmd_buffer[cmd_buffer_pos++] = (char)c;
-        putchar(c); // Echo character
+
+        cmd_line[cmd_line_pos++] = c;
     }
 }
 
-// Built-in command implementations
-static void cmd_mock_temp(const char *args)
+// Built-in command handlers
+
+static void help_handler(const int32_t* args)
 {
-    if (args == NULL || *args == '\0') {
-        printf("\nERROR: MOCK_TEMP requires a temperature value\n");
-        printf("Usage: MOCK_TEMP <value>\n");
-        return;
+    printf("\nRegistered Commands (%d):\n", command_count);
+    for (uint8_t i = 0; i < command_count; i++) {
+        printf("  %d. %s (%d args)\n", 
+               i + 1, 
+               command_table[i]->name,
+               command_table[i]->num_args);
     }
-    
-    float value = atof(args);
-    set_temp(value);
-
-    printf("\nOK: Mock temperature set to %.2f°C (Mock mode: ON)\n", value);
+    printf("\n");
 }
-
-static void cmd_mock_humid(const char *args)
-{
-    if (args == NULL || *args == '\0') {
-        printf("\nERROR: MOCK_HUMID requires a humidity value\n");
-        printf("Usage: MOCK_HUMID <value>\n");
-        return;
-    }
-    
-    float value = atof(args);
-    
-    if (value < 0.0f || value > 100.0f) {
-        printf("\nWARNING: Humidity value %.2f is outside normal range (0-100%%)\n", value);
-    }
-    
-    set_humidity(value);
-    printf("\nOK: Mock humidity set to %.2f%% (Mock mode: ON)\n", value);
-}
-
-static void cmd_mock_off(const char *args)
-{
-    mock_sensor(false);
-    printf("\nOK: Mock mode disabled (using real sensor)\n");
-}
-
-static void cmd_help(const char *args)
-{
-    (void)args; // Unused
-    
-    printf("\n=== Available Commands ===\n");
-    printf("MOCK_TEMP <value>   - Set mock temperature (enables mock mode)\n");
-    printf("MOCK_HUMID <value>  - Set mock humidity (enables mock mode)\n");
-    printf("MOCK_OFF            - Disable mock mode (use real sensor)\n");
-    printf("HELP                - Show this help message\n");
-    printf("\nExamples:\n");
-    printf("  MOCK_TEMP 28.5\n");
-    printf("  MOCK_HUMID 75\n");
-    printf("  MOCK_OFF\n");
-    printf("\nCommands are case-insensitive.\n\n");
-}
-

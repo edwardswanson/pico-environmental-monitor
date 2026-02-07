@@ -5,6 +5,7 @@
 #include "drivers/dht20.h"
 #include "ui/ui.h"
 #include "tools/command/command_interface.h"
+#include "tools/command/commands.c"
 #include "app/sensor_task.h"
 
 #define SDA_PIN 4
@@ -28,6 +29,7 @@ int main()
     ui_startup(); 
 
     sensor_task_init();
+    commands_init();
 
     sleep_ms(1200);
 
@@ -36,10 +38,8 @@ int main()
     {
         float humidity, temp;
         
-        // Check for serial commands (non-blocking)
         cmd_process();
 
-        // Get sensor readings or use mock values
         if (read_sensor_data(&humidity, &temp))
         {
             ui_update(humidity, temp);
