@@ -28,6 +28,7 @@ add_executable(lcd_demo
     src/main.c
     src/lcd_pcf8574.c
     src/dht20.c
+    src/command_interface.c
 )
 
 target_link_libraries(lcd_demo pico_stdlib hardware_i2c)
