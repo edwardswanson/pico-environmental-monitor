@@ -8,8 +8,12 @@
  */
 static void update_led_array(float humidity)
 {
+    // clamp humidity to [0, 100]
+    if (humidity < 0.0f) humidity = 0.0f;
+    if (humidity > 100.0f) humidity = 100.0f;
+
     // convert humidity to number of LEDs
-    uint8_t num_leds_on = (int)ceil(((humidity / 100.0f) * 5));
+    uint8_t num_leds_on = (int)ceil(((humidity / 100.0f) * (NUM_LEDS - 1)));
     
     uint8_t i = 0;
 
@@ -77,7 +81,7 @@ void ui_startup(void)
     for (uint8_t i = 0; i < NUM_LEDS; i++)
     {
         led_on(leds[i]);
-        sleep_ms(500);
+        sleep_ms(250);
     }
 
     for (uint8_t i = 0; i < NUM_LEDS; i++)
