@@ -17,3 +17,7 @@ Makefile
 # Editor
 .vscode/
 .idea/
+
+# pycache
+__pycache__/
+*.pyc

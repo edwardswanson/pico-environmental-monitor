@@ -9,7 +9,14 @@ import cmd
 import sys
 import glob
 import argparse
+import random
+from quotes import QUIT_QUOTES
 from serial.tools import list_ports
+
+def print_quit_quote():
+    """Print a random inspirational quote"""
+    quote = random.choice(QUIT_QUOTES)
+    print(f"\n{quote}\n")
 
 class PicoShell(cmd.Cmd):
     """
@@ -102,9 +109,19 @@ class PicoShell(cmd.Cmd):
 
     def do_exit(self, arg):
         """Exit the CLI"""
+        print_quit_quote()
         print("\nClosing connection... Goodbye!")
         self.ser.close()
         return True
+
+    def do_help(self, arg):
+        """Show help from Pico (overrides built-in help)"""
+        # Forward 'help' to Pico instead of showing local help
+        response = self.send_command("help")
+        if response:
+            self.print_response(response)
+        else:
+            print("  (no response from Pico)")
 
 def main():
     parser = argparse.ArgumentParser(

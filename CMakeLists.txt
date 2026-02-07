@@ -31,6 +31,7 @@ add_executable(lcd_demo
     src/drivers/dht20.c
     src/ui/ui.c
     src/tools/command/command_interface.c
+    src/tools/command/parse.c
     src/app/sensor_task.c
 )
 
