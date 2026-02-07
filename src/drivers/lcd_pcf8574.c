@@ -50,7 +50,6 @@ static bool i2c_write_byte(uint8_t data)
             return true;
         }
 
-        printf("[I2C] Attempt %d failed (result=%d), retrying...\n", attempt + 1, result);
         // Retry on failure (NACK, bus error, timeout)
         if (attempt < I2C_MAX_RETRIES - 1)
         {
@@ -58,8 +57,7 @@ static bool i2c_write_byte(uint8_t data)
         }
     }
 
-    // All retries failed (use printf until better approach available)
-    printf("[I2C] Failed to write 0x%02X after %d attempts\n", data, I2C_MAX_RETRIES);
+    // All retries failed - could log error here if stdio available
     return false;
 }
 
@@ -122,8 +120,8 @@ static void write_char(char c)
  */
 void lcd_clear(void)
 {
-    command(LCD_CMD_CLEAR);
-    sleep_ms(LCD_CLEAR_DELAY_MS);
+    command(0x01);
+    sleep_ms(2);
 }
 
 /**
@@ -161,7 +159,7 @@ void lcd_print(const char *s)
     if (!s)
         return; // Null pointer guard
 
-    for (size_t i = 0; s[i] != '\0'; i++)
+    for (size_t i = 0; i < strlen(s); i++)
     {
         if (s[i] == '\n')
         {

@@ -1,6 +1,9 @@
 /**
  * @file lcd_pcf8574.h
  * @brief HD44780 LCD driver via PCF8574 I2C expander
+ *
+ * DATASHEET
+ * https://cdn.sparkfun.com/assets/9/5/f/7/b/HD44780.pdf
  */
 
 #ifndef LCD_PCF8574_H
