@@ -2,7 +2,7 @@
  * @file led_strip.h
  * @brief Public API for WS2812B LED strip driver
  * 
- * WS2812B Datasheet: https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf [web:539]
+ * WS2812B Datasheet: https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
  * 
  * Initialize once, then call patterns with temperature values from DHT20.
  */
