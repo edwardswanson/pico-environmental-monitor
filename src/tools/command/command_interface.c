@@ -6,24 +6,21 @@
 #include "command_interface.h"
 #include "parse.h"
 
-// Command buffer for serial input
-static char cmd_buffer[CMD_BUFFER_SIZE];
-static int cmd_buffer_pos = 0;
-
 // Command table
 static const cmd_entry_t* command_table[MAX_COMMANDS];
 static uint8_t command_count = 0;
 
-// Forward declarations
-static void help_handler(const int32_t* args);
-
 // Built-in help command
+static void help_handler(const int32_t* args);
 static const cmd_entry_t help_command = {
     .name = "help",
     .handler = help_handler,
     .num_args = 0,
 };
 
+/**
+ * @brief init the command table with the help command
+ */
 void cmd_init(void)
 {
     cmd_register(&help_command);
@@ -32,6 +29,11 @@ void cmd_init(void)
     printf("Type 'help' for available commands\n\n");
 }
 
+/**
+ * @brief register a new command onto the command table
+ *
+ * @param command the command entry to add to the tabl 
+ */
 void cmd_register(const cmd_entry_t* command)
 {
     if (command_count >= MAX_COMMANDS) {
@@ -43,7 +45,15 @@ void cmd_register(const cmd_entry_t* command)
 }
 
 /**
- * Find and execute a command
+ * @brief execute a command from the command interface
+ *
+ * function will check the number of arguments with the value
+ * listed in the command table, and send an error message if
+ * the numbers don't match
+ *
+ * @param cmd the command to execute
+ * @param args pointer to the arguments for the command
+ * @param num_args number of arguments for the command
  */
 static void cmd_execute(char* cmd, int32_t* args, uint8_t num_args)
 {
@@ -73,6 +83,12 @@ static void cmd_execute(char* cmd, int32_t* args, uint8_t num_args)
            cmd);
 }
 
+/**
+ * @brief process the command string from the usb port
+ *
+ * Utilizes the parse module to parse the command string
+ * into a command and its arguments. 
+ */
 void cmd_process(void)
 {
     uint8_t chars_processed = 0;
@@ -109,8 +125,10 @@ void cmd_process(void)
     }
 }
 
-// Built-in command handlers
-
+/**
+ * @brief built in help function to list available commands
+ *
+ */
 static void help_handler(const int32_t* args)
 {
     printf("\nRegistered Commands (%d):\n", command_count);

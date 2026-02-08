@@ -36,7 +36,7 @@ static void set_mock(const int32_t args[])
 static const cmd_entry_t sensor_commands[] = {
     { .name = "mock_temp", .handler = mock_temp, .num_args = 1, },
     { .name = "mock_humid", .handler = mock_humid, .num_args = 1, },
-    { .name = "mock", .handler = set_mock, .num_args = 2, },
+    { .name = "mock", .handler = set_mock, .num_args = 1, },
 };
 
 void commands_init(void)

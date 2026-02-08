@@ -1,5 +1,14 @@
 #include "parse.h"
 
+/**
+ * @brief converts an string argument to a long if possible
+ *
+ * @param arg the argument as a string to convert
+ * @param value the long pointer to place the converted value
+ *
+ * @return true if conversion successful false otherwise
+ *
+ */
 static bool convert_arg(char* arg, long* value)
 {
     char* endptr;
@@ -17,6 +26,16 @@ static bool convert_arg(char* arg, long* value)
 
 }
 
+/**
+ * @brief parses a command line string into a command and args
+ *
+ * @param cmd_line command line to parse
+ * @param cmd char pointer to place command into
+ * @param args array to place command arguments
+ *
+ * @return number of arguments parsed
+ *
+ */
 uint8_t parse_line(char* cmd_line, char* cmd, int32_t args[])
 {
     uint8_t count = 0;

@@ -19,11 +19,6 @@ typedef struct {
     uint8_t num_args;      // Number of arguments expected
 } cmd_entry_t;
 
-// Initialize command interface
 void cmd_init(void);
-
-// Process commands (call in main loop if not using interrupts)
 void cmd_process(void);
-
-// Register a command
 void cmd_register(const cmd_entry_t* command);
