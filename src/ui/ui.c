@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "ui.h"
+#include "led_strip.h"
 
 /**
  * @brief Updates the LED array to display new humidity
@@ -57,6 +58,10 @@ static void update_lcd(float humidity, float temp, char temp_unit)
     lcd_print(line2);
 }
 
+static void update_led_strip(float temp) {
+    led_pattern_2(temp);
+}
+
 /**
  * @brief initializes all UI componenets
  *
@@ -66,6 +71,7 @@ void ui_init(void)
 {
     lcd_init();
     led_init();
+    led_strip_init();
 }
 
 /**
@@ -105,4 +111,5 @@ void ui_update(float humidity, float temp, char temp_unit)
 {
     update_lcd(humidity, temp, temp_unit);
     update_led_array(humidity);
+    update_led_strip(temp);
 }
