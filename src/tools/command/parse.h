@@ -6,6 +6,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-uint8_t parse_line(char* cmd_line, char* cmd, int32_t args[]);
+#define CMD_MAX_ARGS 16
+#define CMD_MAX_LEN 16
+
+typedef struct
+{
+    char cmd[CMD_MAX_LEN];
+    int32_t args[CMD_MAX_ARGS];
+    uint8_t num_args;
+    bool valid;
+} parsed_cmd_t;
+
+bool parse_line(char* cmd_line, parsed_cmd_t* parsed_cmd);
 
 

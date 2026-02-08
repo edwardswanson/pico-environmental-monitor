@@ -26,10 +26,10 @@ int main()
 
     ui_init();
     cmd_init();
+    commands_init();
     ui_startup(); 
 
     sensor_task_init();
-    commands_init();
 
     sleep_ms(1200);
 

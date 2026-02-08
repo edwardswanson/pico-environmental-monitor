@@ -10,23 +10,61 @@
 static const cmd_entry_t* command_table[MAX_COMMANDS];
 static uint8_t command_count = 0;
 
-// Built-in help command
-static void help_handler(const int32_t* args);
-static const cmd_entry_t help_command = {
+// Builtin help handler
+void help_handler(const int32_t* args);
+static cmd_entry_t help_command = {
     .name = "help",
     .handler = help_handler,
     .num_args = 0,
 };
 
 /**
+ * @brief execute a command from the command interface
+ *
+ * function will check the number of arguments with the value
+ * listed in the command table, and send an error message if
+ * the numbers don't match
+ *
+ * @param cmd the command to execute
+ * @param args pointer to the arguments for the command
+ * @param num_args number of arguments for the command
+ */
+static void cmd_execute(parsed_cmd_t* parsed_cmd)
+{
+    // search command table for a match
+    for (uint8_t i = 0; i < command_count; i++) 
+    {
+        if (strcmp(parsed_cmd->cmd, command_table[i]->name) == 0) 
+        {
+            // Validate argument count
+            if (parsed_cmd->num_args != command_table[i]->num_args) 
+            {
+                printf("\nERROR: Command '%s' expects %d arguments, got %d\n",
+                       command_table[i]->name,
+                       command_table[i]->num_args,
+                       parsed_cmd->num_args);
+                return;
+            }
+            
+            // Execute command
+            command_table[i]->handler(parsed_cmd->args);
+            return;
+        }
+    }
+    
+    // Unknown command
+    printf("\nERROR: Unknown command '%s'. Type 'help' for available commands.\n", 
+           parsed_cmd->cmd);
+}
+
+
+/**
  * @brief init the command table with the help command
  */
 void cmd_init(void)
 {
+    // register built in help command
     cmd_register(&help_command);
-    
-    printf("\n=== Command Interface Ready ===\n");
-    printf("Type 'help' for available commands\n\n");
 }
 
 /**
@@ -44,44 +82,6 @@ void cmd_register(const cmd_entry_t* command)
     command_table[command_count++] = command;
 }
 
-/**
- * @brief execute a command from the command interface
- *
- * function will check the number of arguments with the value
- * listed in the command table, and send an error message if
- * the numbers don't match
- *
- * @param cmd the command to execute
- * @param args pointer to the arguments for the command
- * @param num_args number of arguments for the command
- */
-static void cmd_execute(char* cmd, int32_t* args, uint8_t num_args)
-{
-    // search command table for a match
-    for (uint8_t i = 0; i < command_count; i++) 
-    {
-        if (strcmp(cmd, command_table[i]->name) == 0) 
-        {
-            // Validate argument count
-            if (num_args != command_table[i]->num_args) 
-            {
-                printf("\nERROR: Command '%s' expects %d arguments, got %d\n",
-                       command_table[i]->name,
-                       command_table[i]->num_args,
-                       num_args);
-                return;
-            }
-            
-            // Execute command
-            command_table[i]->handler(args);
-            return;
-        }
-    }
-    
-    // Unknown command
-    printf("\nERROR: Unknown command '%s'. Type 'help' for available commands.\n", 
-           cmd);
-}
 
 /**
  * @brief process the command string from the usb port
@@ -112,12 +112,11 @@ void cmd_process(void)
         {
             cmd_line[cmd_line_pos++] = '\0';
 
-            char cmd[CMD_MAX_LEN];
-            int32_t args[CMD_MAX_ARGS];
-            uint8_t num_args;
-
-            num_args = parse_line(cmd_line, cmd, args);
-            cmd_execute(cmd, args, num_args);
+            parsed_cmd_t parsed_cmd;
+            if (parse_line(cmd_line, &parsed_cmd))
+            {
+                cmd_execute(&parsed_cmd);
+            }
             return;
         }
 
@@ -129,7 +128,7 @@ void cmd_process(void)
  * @brief built in help function to list available commands
  *
  */
-static void help_handler(const int32_t* args)
+void help_handler(const int32_t* args)
 {
     printf("\nRegistered Commands (%d):\n", command_count);
     for (uint8_t i = 0; i < command_count; i++) {
@@ -140,3 +139,4 @@ static void help_handler(const int32_t* args)
     }
     printf("\n");
 }
+

@@ -6,8 +6,6 @@
 // Maximum number of arguments for a command
 #define CMD_BUFFER_SIZE 128
 #define MAX_COMMANDS 32
-#define CMD_MAX_ARGS 16
-#define CMD_MAX_LEN 16
 
 // Command handler function type
 typedef void (*cmd_handler_t)(const int32_t* args);

@@ -36,7 +36,7 @@ static bool convert_arg(char* arg, long* value)
  * @return number of arguments parsed
  *
  */
-uint8_t parse_line(char* cmd_line, char* cmd, int32_t args[])
+bool parse_line(char* cmd_line, parsed_cmd_t* parsed_cmd)
 {
     uint8_t count = 0;
     char* token;
@@ -47,7 +47,7 @@ uint8_t parse_line(char* cmd_line, char* cmd, int32_t args[])
     // save first token in cmd_line
     if (token != NULL)
     {
-        strcpy(cmd, token);
+        strncpy(parsed_cmd->cmd, token, CMD_MAX_LEN);
     }
     
     token = strtok_r(NULL, " ", &saveptr);
@@ -58,15 +58,17 @@ uint8_t parse_line(char* cmd_line, char* cmd, int32_t args[])
         long value;
         if (convert_arg(token, &value)) 
         {
-            args[count++] = (int32_t)value;
+            parsed_cmd->args[count++] = (int32_t)value;
         } 
         else 
         {
             printf("WARNING: Could not parse '%s' as integer\n", token);
+            return false;
         }
         
         token = strtok_r(NULL, " ", &saveptr);
     }
     
-    return count;
+    parsed_cmd->num_args = count;
+    return true;
 }
