@@ -33,7 +33,6 @@ int main()
 
     sleep_ms(1200);
 
-    led_on(leds[0]); 
     while (true)
     {
         float humidity, temp;

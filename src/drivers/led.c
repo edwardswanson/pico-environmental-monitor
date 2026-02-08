@@ -24,7 +24,7 @@ void led_init()
  * @brief Turn a LED on
  * @param led_pin The pin number corresponding to the LED
  */
-void led_on(uint8_t led_pin)
+void turnon_led(uint8_t led_pin)
 {
     gpio_put(led_pin, LED_ON);
 }
@@ -33,7 +33,7 @@ void led_on(uint8_t led_pin)
  * @brief Turn a LED off
  * @param led_pin The pin number corresponding to the LED
  */
-void led_off(uint8_t led_pin)
+void turnoff_led(uint8_t led_pin)
 {
     gpio_put(led_pin, LED_OFF);
 }

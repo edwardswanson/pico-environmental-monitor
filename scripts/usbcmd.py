@@ -31,6 +31,8 @@ class PicoShell(cmd.Cmd):
     Type any other command to send to Pico
     """
 
+    prompt = "picosh> "
+
     def __init__(self, port, baudrate=115200, verbose=False):
         super().__init__()
         self.verbose = verbose

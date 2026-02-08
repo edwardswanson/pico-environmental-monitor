@@ -16,17 +16,17 @@ static void update_led_array(float humidity)
     // set appropriate leds on
     for (; i < num_leds_on; i++)
     {
-        led_on(leds[i]);
+        turnon_led(leds[i]);
     }
 
     // clear remaining leds
     for (; i < NUM_LEDS; i++)
     {
-        led_off(leds[i]);
+        turnoff_led(leds[i]);
     }
 
     // set 6th led if humidity is 100%
-    if (humidity >= 100.0f) led_on(leds[NUM_LEDS - 1]);
+    if (humidity >= 100.0f) turnon_led(leds[NUM_LEDS - 1]);
 }
 
 /**
@@ -76,13 +76,13 @@ void ui_startup(void)
     // test led array
     for (uint8_t i = 0; i < NUM_LEDS; i++)
     {
-        led_on(leds[i]);
+        turnon_led(leds[i]);
         sleep_ms(500);
     }
 
     for (uint8_t i = 0; i < NUM_LEDS; i++)
     {
-        led_off(leds[i]);
+        turnoff_led(leds[i]);
     }
 }
 
