@@ -1,3 +1,16 @@
+/*
+ * I2C Bus Scanner
+ *
+ * Utility that scans the I2C bus and reports all connected devices.
+ * Continuously scans addresses 0x08-0x77 every 3 seconds and prints found
+ * devices to the serial console via USB.
+ *
+ * Used for:
+ * - Verifying sensor connections
+ * - Identifying device I2C addresses
+ * - Troubleshooting I2C communication issues
+ */
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
