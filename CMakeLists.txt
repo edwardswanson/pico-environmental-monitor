@@ -30,9 +30,17 @@ add_executable(lcd_demo
     src/drivers/led.c
     src/drivers/dht20.c
     src/ui/ui.c
+    src/drivers/led_strip.c
 )
 
-target_link_libraries(lcd_demo pico_stdlib hardware_i2c)
+target_link_libraries(lcd_demo pico_stdlib hardware_i2c hardware_pio)
+
+target_include_directories(lcd_demo PUBLIC
+    src/drivers
+)
+
+# Generate ws2812.pio.h automatically
+pico_generate_pio_header(lcd_demo ${CMAKE_CURRENT_LIST_DIR}/src/drivers/ws2812.pio)
 
 pico_enable_stdio_usb(lcd_demo 1)
 pico_enable_stdio_uart(lcd_demo 0)
