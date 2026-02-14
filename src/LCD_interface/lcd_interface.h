@@ -1,8 +1,6 @@
 #ifndef LCD_INTERFACE_H
 #define LCD_INTERFACE_H
 
-#include <stdbool.h>
-
 // Temperature unit enum
 typedef enum
 {

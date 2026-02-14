@@ -12,7 +12,14 @@
 int main()
 {
     stdio_init_all();
-    sleep_ms(2000); // Wait for stdio to initialize (especially important for USB serial)
+
+    // Wait for USB stdio connection with a bounded timeout (max 1 second)
+    // This avoids unnecessary 2s delays when USB isn't being used
+    absolute_time_t deadline = make_timeout_time_ms(1000);
+    while (!stdio_usb_connected() && absolute_time_diff_us(get_absolute_time(), deadline) > 0)
+    {
+        sleep_ms(10);
+    }
 
     // I2C setup
     i2c_init(i2c0, 100 * 1000);

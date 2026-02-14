@@ -23,7 +23,6 @@
 
 #include "lcd_interface.h"
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 #include "pico/stdlib.h"
 
@@ -51,19 +50,19 @@ void lcd_interface_init(void)
 // Process a complete command
 static void process_command(const char *cmd)
 {
-    if (strcasecmp(cmd, "F") == 0 || strcasecmp(cmd, "FAHRENHEIT") == 0)
+    if (strcmp(cmd, "F") == 0 || strcmp(cmd, "FAHRENHEIT") == 0)
     {
         current_temp_unit = TEMP_FAHRENHEIT;
         printf("Temperature unit set to Fahrenheit\n");
         fflush(stdout);
     }
-    else if (strcasecmp(cmd, "C") == 0 || strcasecmp(cmd, "CELSIUS") == 0)
+    else if (strcmp(cmd, "C") == 0 || strcmp(cmd, "CELSIUS") == 0)
     {
         current_temp_unit = TEMP_CELSIUS;
         printf("Temperature unit set to Celsius\n");
         fflush(stdout);
     }
-    else if (strcasecmp(cmd, "H") == 0 || strcasecmp(cmd, "HELP") == 0)
+    else if (strcmp(cmd, "H") == 0 || strcmp(cmd, "HELP") == 0)
     {
         printf("\nAvailable commands:\n");
         printf("  F or FAHRENHEIT - Set temperature to Fahrenheit\n");
@@ -72,7 +71,7 @@ static void process_command(const char *cmd)
         printf("  Q               - Show exit instructions\n\n");
         fflush(stdout);
     }
-    else if (strcasecmp(cmd, "Q") == 0)
+    else if (strcmp(cmd, "Q") == 0)
     {
         printf("\nTo exit the terminal:\n");
         printf("  Press Ctrl-a then Ctrl-x\n");
@@ -88,23 +87,40 @@ static void process_command(const char *cmd)
 // Check for and process serial input (non-blocking)
 void lcd_interface_update(void)
 {
-    int c = getchar_timeout_us(0);
+    int c;
+    static bool buffer_overflow = false;
 
-    if (c != PICO_ERROR_TIMEOUT)
+    // Process all pending characters to avoid RX buffer overflow
+    while ((c = getchar_timeout_us(0)) != PICO_ERROR_TIMEOUT)
     {
         if (c == '\n' || c == '\r')
         {
-            if (cmd_index > 0)
+            if (buffer_overflow)
+            {
+                printf("Error: Command too long (max %zu characters)\n", sizeof(cmd_buffer) - 1);
+                buffer_overflow = false;
+            }
+            else if (cmd_index > 0)
             {
                 cmd_buffer[cmd_index] = '\0';
                 process_command(cmd_buffer);
-                cmd_index = 0;
+            }
+            cmd_index = 0;
+        }
+        else if (!buffer_overflow)
+        {
+            if (cmd_index < sizeof(cmd_buffer) - 1)
+            {
+                cmd_buffer[cmd_index++] = toupper(c);
+            }
+            else
+            {
+                // Buffer is full; mark overflow and ignore further chars until newline
+                buffer_overflow = true;
+                printf("\nError: Command too long (max %zu characters)\n", sizeof(cmd_buffer) - 1);
             }
         }
-        else if (cmd_index < sizeof(cmd_buffer) - 1)
-        {
-            cmd_buffer[cmd_index++] = toupper(c);
-        }
+        // If buffer_overflow is true, silently drop characters until newline
     }
 }
 
