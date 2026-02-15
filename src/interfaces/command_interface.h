@@ -1,5 +1,5 @@
-#ifndef LCD_INTERFACE_H
-#define LCD_INTERFACE_H
+#ifndef COMMAND_INTERFACE_H
+#define COMMAND_INTERFACE_H
 
 // Temperature unit enum
 typedef enum
@@ -23,4 +23,4 @@ float lcd_interface_convert_temp(float celsius);
 // Get unit symbol string
 const char *lcd_interface_get_unit_symbol(void);
 
-#endif // LCD_INTERFACE_H
+#endif // COMMAND_INTERFACE_H

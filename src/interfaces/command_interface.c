@@ -1,8 +1,11 @@
 /*
- * lcd_interface.c
+ * command_interface.c
  *
- * LCD interface for the Pico Environmental Monitor.
- * This module handles the display of temperature and humidity on the LCD.
+ * Interface for selecting and managing the temperature display unit
+ * for the Pico Environmental Monitor via a USB-serial console.
+ * This module parses text commands, tracks the current temperature unit,
+ * and provides helpers to convert temperatures and report the unit symbol
+ * for use by higher-level display code (e.g. an LCD driver).
  *
  * How to connect (macOS):
  *   1) Connect the Pico via USB.
@@ -21,9 +24,10 @@
  * - Commands are processed on newline with a slight delay, so type slowly.
  */
 
-#include "lcd_interface.h"
+#include "command_interface.h"
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include "pico/stdlib.h"
 
 // Private state
@@ -111,13 +115,12 @@ void lcd_interface_update(void)
         {
             if (cmd_index < sizeof(cmd_buffer) - 1)
             {
-                cmd_buffer[cmd_index++] = toupper(c);
+                cmd_buffer[cmd_index++] = toupper((unsigned char)c);
             }
             else
             {
                 // Buffer is full; mark overflow and ignore further chars until newline
                 buffer_overflow = true;
-                printf("\nError: Command too long (max %zu characters)\n", sizeof(cmd_buffer) - 1);
             }
         }
         // If buffer_overflow is true, silently drop characters until newline
