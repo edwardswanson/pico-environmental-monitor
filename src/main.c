@@ -4,10 +4,19 @@
 #include "drivers/dht20.h"
 #include "interfaces/command_interface.h"
 #include "drivers/lcd_pcf8574.h"
+#include "pico/time.h"
 #include "ui/ui.h"
 
 #define SDA_PIN 4
 #define SCL_PIN 5
+
+static bool sensor_data_ready = false;
+static struct repeating_timer sensor_timer;
+
+static bool sensor_task_callback(struct repeating_timer* t)
+{
+    sensor_data_ready = true;
+}
 
 int main()
 {
@@ -33,6 +42,7 @@ int main()
 
     ui_init();
     ui_startup();
+    add_repeating_timer_ms(1000, sensor_task_callback, NULL, &sensor_timer);
 
     sleep_ms(1200);
 
@@ -41,15 +51,18 @@ int main()
         // Check for serial commands (non-blocking)
         lcd_interface_update();
 
-        float humidity, temp_celsius;
-        dht20_read(&humidity, &temp_celsius);
+        if(sensor_data_ready)
+        {
+            float humidity, temp_celsius;
+            dht20_read(&humidity, &temp_celsius);
 
-        // Convert temperature based on user preference
-        float temp_display = lcd_interface_convert_temp(temp_celsius);
-        const char *unit = lcd_interface_get_unit_symbol();
+            // Convert temperature based on user preference
+            float temp_display = lcd_interface_convert_temp(temp_celsius);
+            const char *unit = lcd_interface_get_unit_symbol();
 
-        ui_update(humidity, temp_display, unit[0]); // Third param is to pass unit symbol (e.g. 'C' or 'F')
+            ui_update(humidity, temp_display, unit[0]); // Third param is to pass unit symbol (e.g. 'C' or 'F')
+        }
 
-        sleep_ms(1000);
+        sleep_ms(1);
     }
 }
