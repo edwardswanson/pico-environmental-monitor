@@ -61,6 +61,8 @@ int main()
             const char *unit = lcd_interface_get_unit_symbol();
 
             ui_update(humidity, temp_display, unit[0]); // Third param is to pass unit symbol (e.g. 'C' or 'F')
+
+            sensor_data_ready = false;
         }
 
         sleep_ms(1);
