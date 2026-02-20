@@ -13,6 +13,16 @@
 static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
 
+
+/**
+ * @brief callback function to read from the sensor
+ *
+ * @details This callback function sets the sensor_data_ready flag 
+ * to inform the main loop that it should read temperature and humidity values.
+ * A sensor read is not performed in this function due to i2c conflicts
+ * j
+ * @param t the repeating timer for the callback
+ */
 static bool sensor_task_callback(struct repeating_timer* t)
 {
     sensor_data_ready = true;
@@ -37,11 +47,13 @@ int main()
     gpio_pull_up(SDA_PIN);
     gpio_pull_up(SCL_PIN);
 
+    // app setup
     dht20_init();
     lcd_interface_init();
-
     ui_init();
     ui_startup();
+
+    // task initilization
     add_repeating_timer_ms(1000, sensor_task_callback, NULL, &sensor_timer);
 
     sleep_ms(1200);
