@@ -11,5 +11,7 @@
 
 
 void led_strip_init(void);
-void led_pattern_1(float temp);
-void led_pattern_2(float temp);
+void led_strip_array_fill(uint32_t color);
+void led_strip_array_fill_partial(uint8_t num_leds_to_fill, uint32_t color);
+void led_strip_array_clear(void);
+void led_strip_light(void);

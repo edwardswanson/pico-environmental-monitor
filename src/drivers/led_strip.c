@@ -2,19 +2,12 @@
  * @file led_strip.c
  * @brief WS2812B RGB LED strip driver using Pico PIO
  *
- * Controls 8x WS2812B addressable LEDs (GP2) to visualize temperature:
- * - Pattern 1: All LEDs same color (temp → color map)
- * - Pattern 2: Progressive fill (temp → #LEDs lit + color)
+ * Controls 8x WS2812B addressable LEDs (GP2) to visualize temperature
  *
  * Hardware:
  * - WS2812B Datasheet: https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
  * - Adapted from Raspberry Pi Pico SDK WS2812 example
  * - GPIO 2 (data in), 5V power (external supply recommended for >8 LEDs)
- * 
- * API Usage:
- *   led_strip_init();     // Call once from ui_init()
- *   led_pattern_1(temp);  // All LEDs same color
- *   led_pattern_2(temp);  // Progressive fill pattern
  */
 
 #include <stdio.h>
@@ -28,20 +21,11 @@
 
 
 #define WS2812_PIN 2
-#define NUM_LEDS 8
+#define NUM_STRIP_LEDS 8
 #define IS_RGBW false
 
-// G-R-B:
-// 0xGGRRBB
-#define PURPLE 0x00050E
-#define BLUE 0x000011
-#define TEAL 0x110011
-#define GREEN 0x110000
-#define YELLOW 0x111100
-#define ORANGE 0x051100
-#define RED 0x001100
 
-#define BLACK 0x000000
+static uint32_t led_strip_array[NUM_STRIP_LEDS];
 
 // Private global variabples for PIO state
 static PIO pio;
@@ -64,97 +48,48 @@ void led_strip_init(void) {
         // so we will get a PIO instance suitable for addressing gpios >= 32 if needed and supported by the hardware
         bool success = pio_claim_free_sm_and_add_program_for_gpio_range(&ws2812_program, &pio, &sm, &offset, WS2812_PIN, 1, true);
         hard_assert(success);
-
         ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+        led_strip_array_clear();
 }
 
-
-
 /**
- * @brief Pattern 1: All LEDs same color based on temperature
- * @param temp Temperature in Celsius (-40 to +85°C range)
- * 
- * Maps temperature to single color across all 8 LEDs
-*/
-void led_pattern_1(float temp) {
-        uint32_t color;
-        color = temp < -10 ? PURPLE : 
-                temp < -2 ? BLUE : 
-                temp < 6 ? TEAL : 
-                temp < 14 ? GREEN : 
-                temp < 22 ? YELLOW : 
-                temp < 29 ? ORANGE : RED;
-
-        for (int i = 0; i < NUM_LEDS; i++) {
-                pio_sm_put_blocking(pio, sm, color << 8);
+ * @brief Sets ALL 'LEDs' in our led_strip_array with the desired color
+ * @param color 32-bit GRB color value (0xGGRRBB format)
+ */
+void led_strip_array_fill(uint32_t color) {
+        for (uint8_t i = 0; i < NUM_STRIP_LEDS; i++) {
+                led_strip_array[i] = color;
         }
 }
 
-
 /**
- * @brief Get WS2812 color from temperature value
- * @param temp Temperature in Celsius
- * @return 32-bit GRB color value (0xGGRRBB format)
- * @private
+ * @brief Sets partial 'LEDs' in our led_strip_array with the desired color
+ * @param color 32-bit GRB color value (0xGGRRBB format)
  */
-static uint32_t get_temp_color(float temp) {
-    return temp < -10 ? PURPLE :
-           temp < -2 ? BLUE  :
-           temp < 6 ? TEAL  :
-           temp < 14 ? GREEN :
-           temp < 22 ? YELLOW :
-           temp < 29 ? ORANGE : RED;
+void led_strip_array_fill_partial(uint8_t num_leds_to_fill, uint32_t color) {
+        if (num_leds_to_fill > NUM_STRIP_LEDS) {
+                num_leds_to_fill = NUM_STRIP_LEDS;
+        }
+        for (uint8_t i = 0; i < num_leds_to_fill; i++) {
+                led_strip_array[i] = color;
+        }
 }
 
 /**
- * @brief Number of LEDs to illuminate per temperature color
- * @private
+ * @brief Clear led_strip_array (all LEDs off)
+ * Sets entire array to black (0x000000). 
  */
-static const uint8_t color_led_count[] = {
-    [PURPLE] = 2,
-    [BLUE]   = 3,
-    [TEAL]   = 4,
-    [GREEN]  = 5,
-    [YELLOW] = 6,
-    [ORANGE] = 7,
-    [RED]    = NUM_LEDS  // all LEDs
-};
-
-/**
- * @brief Fill first N LEDs with color, rest black
- * @param color 32-bit GRB color value
- * @param num_leds Number of LEDs to illuminate [0, NUM_LEDS]
- * @private
- */
-static void fill_leds(uint32_t color, uint8_t num_leds) {
-    // Light first N LEDs
-    for (uint8_t i = 0; i < num_leds; i++) {
-        pio_sm_put_blocking(pio, sm, color << 8u);
-    }
-    
-    // Clear remaining LEDs
-    for (uint8_t i = num_leds; i < NUM_LEDS; i++) {
-        pio_sm_put_blocking(pio, sm, BLACK << 8u);
-    }
+void led_strip_array_clear(void) {
+        led_strip_array_fill(0); // sets all leds in the array to black (i.e. black == OFF)
 }
 
 /**
- * @brief Pattern 2: Progressive fill based on temperature
- * @param temp Temperature in Celsius
- * 
- * Lights progressive number of LEDs (2-8) with temperature color:
- * | Temperature | LEDs | Color  |
- * |-------------|------|--------|
- * | < -10°C     | 2    | Purple |
- * | -10 to -2°C | 3    | Blue   |
- * | -2 to 6°C   | 4    | Teal   |
- * | 6 to 14°C   | 5    | Green  |
- * | 14 to 22°C  | 6    | Yellow |
- * | 22 to 29°C  | 7    | Orange |
- * | ≥ 29°C      | 8    | Red    |
+ * @brief Transmit the colors in led_strip_array to WS2812 hardware via PIO
+ * Each 32-bit color value is shifted left 8 bits (<< 8u).
  */
-void led_pattern_2(float temp) {
-        uint32_t color = get_temp_color(temp);
-        uint8_t num_leds = color_led_count[color];
-        fill_leds(color, num_leds);
+void led_strip_light(void) {
+        // Stream buffer to PIO
+        for (uint8_t i = 0; i < NUM_STRIP_LEDS; i++) {
+                pio_sm_put_blocking(pio, sm, led_strip_array[i] << 8u);
+        }
 }
