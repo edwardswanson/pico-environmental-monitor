@@ -8,6 +8,8 @@
  * - WS2812B Datasheet: https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
  * - Adapted from Raspberry Pi Pico SDK WS2812 example
  * - GPIO 2 (data in), 5V power (external supply recommended for >8 LEDs)
+ * EXTERNAL 5V POWER REQUIRED
+ * USB cannot reliably power >3 WS2812 LEDs. Use external 5V supply for 8-LED strip.
  */
 
 #include <stdio.h>
@@ -47,7 +49,10 @@ void led_strip_init(void) {
         // We use pio_claim_free_sm_and_add_program_for_gpio_range (for_gpio_range variant)
         // so we will get a PIO instance suitable for addressing gpios >= 32 if needed and supported by the hardware
         bool success = pio_claim_free_sm_and_add_program_for_gpio_range(&ws2812_program, &pio, &sm, &offset, WS2812_PIN, 1, true);
-        hard_assert(success);
+        if (!success) {
+                printf("ERROR: Failed to clain PIO for WS2812\n");
+                return;
+        }
         ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
         led_strip_array_clear();
 }
