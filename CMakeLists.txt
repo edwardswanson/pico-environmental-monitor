@@ -29,9 +29,11 @@ add_executable(lcd_demo
     src/drivers/lcd_pcf8574.c
     src/drivers/led.c
     src/drivers/dht20.c
-    src/ui/ui.c
+    src/app/ui.c
+    src/app/sensor_task.c
     src/interfaces/command_interface.c
     src/drivers/led_strip.c
+    src/interfaces/parse.c
 )
 
 target_link_libraries(lcd_demo pico_stdlib hardware_i2c hardware_pio)

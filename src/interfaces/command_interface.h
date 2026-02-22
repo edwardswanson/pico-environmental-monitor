@@ -19,4 +19,4 @@ typedef struct {
 
 void cmd_init(void);
 void cmd_process(void);
-void cmd_register(const cmd_entry_t* command);#ifndef COMMAND_INTERFACE_H
+void cmd_register(const cmd_entry_t* command);

@@ -112,7 +112,7 @@ class PicoShell(cmd.Cmd):
     def do_exit(self, arg):
         """Exit the CLI"""
         print_quit_quote()
-        print("\nClosing connection... Goodbye!")
+        print("Closing connection... Goodbye!")
         self.ser.close()
         return True
 

@@ -3,13 +3,15 @@
 #include "hardware/i2c.h"
 #include "drivers/dht20.h"
 #include "interfaces/command_interface.h"
+#include "interfaces/commands.c"
 #include "drivers/lcd_pcf8574.h"
-#include "pico/time.h"
-#include "ui/ui.h"
+#include "app/ui.h"
+#include "app/sensor_task.h"
 
 #define SDA_PIN 4
 #define SCL_PIN 5
 
+<<<<<<< HEAD
 static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
 volatile absolute_time_t prev_time;
@@ -30,6 +32,8 @@ static bool sensor_task_callback(struct repeating_timer* t)
     prev_time = get_absolute_time();        // reset last time function was called
     return true;
 }
+=======
+>>>>>>> ef89685 (added extra arg for temp and humid)
 
 int main()
 {
@@ -52,19 +56,19 @@ int main()
 
     // app setup
     dht20_init();
-    lcd_interface_init();
+    cmd_init();
+    commands_init();
+    init_sensor_task();
     ui_init();
     ui_startup();
 
-    // task initilization
-    add_repeating_timer_ms(1000, sensor_task_callback, NULL, &sensor_timer);
 
     sleep_ms(1200);
 
     while (true)
     {
         // Check for serial commands (non-blocking)
-        lcd_interface_update();
+        cmd_process();
 
         // error check sensor irq
         int64_t diff_us = absolute_time_diff_us(prev_time, get_absolute_time());
@@ -73,18 +77,12 @@ int main()
             printf("Timer stalled\n");
         }
 
-        if(sensor_data_ready)
+        float humidity, temp;
+        char unit;
+
+        if(read_sensor_data(&temp, &humidity, &unit))
         {
-            float humidity, temp_celsius;
-            dht20_read(&humidity, &temp_celsius);
-
-            // Convert temperature based on user preference
-            float temp_display = lcd_interface_convert_temp(temp_celsius);
-            const char *unit = lcd_interface_get_unit_symbol();
-
-            ui_update(humidity, temp_display, unit[0]); // Third param is to pass unit symbol (e.g. 'C' or 'F')
-
-            sensor_data_ready = false;
+            ui_update(humidity, temp, unit); // Third param is to pass unit symbol (e.g. 'C' or 'F')
         }
 
         sleep_ms(1);
