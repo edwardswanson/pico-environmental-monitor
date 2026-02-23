@@ -132,7 +132,12 @@ static uint8_t get_num_leds_to_light(float temp) {
  * | 81 to 96°F  | 7    | Orange | very hot
  * | ≥ 96°F      | 8    | Red    | extreme heat *WARNING*
  */
-static void update_led_strip(float temp) {
+static void update_led_strip(float temp, char temp_unit) {
+    
+    if (temp_unit == 'C') {
+        temp = (temp * 9.0f / 5.0f) + 32.0f;
+    }
+
     uint32_t color = get_temp_color(temp);
 
     if (curr_led_pattern == 1) {
@@ -198,5 +203,5 @@ void ui_update(float humidity, float temp, char temp_unit)
 {
     update_lcd(humidity, temp, temp_unit);
     update_led_array(humidity);
-    update_led_strip(temp);
+    update_led_strip(temp, temp_unit);
 }
