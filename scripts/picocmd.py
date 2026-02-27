@@ -33,9 +33,8 @@ class PicoShell(cmd.Cmd):
 
     prompt = "picosh> "
 
-    def __init__(self, port, baudrate=115200, verbose=False):
+    def __init__(self, port, baudrate=115200):
         super().__init__()
-        self.verbose = verbose
         self.port_name = port
 
         try:
@@ -48,9 +47,6 @@ class PicoShell(cmd.Cmd):
 
     def send_command(self, command):
         """Send command to Pico and return response"""
-        if self.verbose:
-            print(f"[TX] {command}")
-        
         try:
             # Send command
             self.ser.write(f"{command}\n".encode())
@@ -71,8 +67,6 @@ class PicoShell(cmd.Cmd):
                     line = self.ser.readline().decode('utf-8', errors='ignore').strip()
                     if line:
                         response_lines.append(line)
-                        if self.verbose:
-                            print(f"[RX] {line}")
                         last_data_time = time.time()
                 else:
                     # If we got at least one line and haven't seen data for 100ms, we're done
@@ -129,14 +123,12 @@ def main():
     parser = argparse.ArgumentParser(
         description="Interactive CLI for DHT20 Sensor Project",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog='''
 Examples:
-  %(prog)s                           # Auto-detect Pico port
   %(prog)s /dev/tty.usbmodem14201    # Specify port
   %(prog)s -p COM5                   # Windows
-  %(prog)s -v                        # Verbose mode
   %(prog)s -c "mock_temp 30"         # Run single command and exit
-        """
+        '''
     )
     
     parser.add_argument(
@@ -150,17 +142,6 @@ Examples:
         type=int,
         default=115200,
         help='Baud rate (default: 115200)'
-    )
-    
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Enable verbose mode (show TX/RX)'
-    )
-    
-    parser.add_argument(
-        '-c', '--command',
-        help='Execute single command and exit'
     )
     
     parser.add_argument(
@@ -182,7 +163,7 @@ Examples:
     port = args.port
     
     # Create shell
-    shell = PicoShell(port, args.baudrate, args.verbose)
+    shell = PicoShell(port, args.baudrate)
     
     # Interactive mode
     try:
