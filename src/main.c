@@ -15,23 +15,6 @@ static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
 volatile absolute_time_t prev_time;
 
-
-/**
- * @brief callback function to read from the sensor
- *
- * @details This callback function sets the sensor_data_ready flag 
- * to inform the main loop that it should read temperature and humidity values.
- * A sensor read is not performed in this function due to i2c conflicts
- * 
- * @param t the repeating timer for the callback
- */
-static bool sensor_task_callback(struct repeating_timer* t)
-{
-    sensor_data_ready = true;
-    prev_time = get_absolute_time();        // reset last time function was called
-    return true;
-}
-
 int main()
 {
     stdio_init_all();
@@ -80,6 +63,7 @@ int main()
         if(read_sensor_data(&temp, &humidity, &unit))
         {
             ui_update(humidity, temp, unit); // Third param is to pass unit symbol (e.g. 'C' or 'F')
+            prev_time = get_absolute_time();
         }
 
         sleep_ms(1);

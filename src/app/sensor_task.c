@@ -25,6 +25,7 @@ static float mock_humid = 50.0;
 static bool sensor_task_callback(struct repeating_timer* t)
 {
     sensor_data_ready = true;
+    return true;
 }
 
 /**
