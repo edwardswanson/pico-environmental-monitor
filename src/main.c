@@ -11,7 +11,6 @@
 #define SDA_PIN 4
 #define SCL_PIN 5
 
-<<<<<<< HEAD
 static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
 volatile absolute_time_t prev_time;
@@ -32,8 +31,6 @@ static bool sensor_task_callback(struct repeating_timer* t)
     prev_time = get_absolute_time();        // reset last time function was called
     return true;
 }
-=======
->>>>>>> ef89685 (added extra arg for temp and humid)
 
 int main()
 {
