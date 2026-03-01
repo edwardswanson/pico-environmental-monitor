@@ -1,5 +1,6 @@
 #include "command_interface.h"
 #include "../app/sensor_task.h"
+#include "../app/ui.h"
 #include <stdio.h>
 
 static void mock_temp(const int32_t args[])
@@ -37,12 +38,24 @@ static void set_unit(const int32_t args[])
     
     printf("OK: unit set");
 }
+
+static void set_pattern(const int32_t args[]) 
+{
+    if (args[0] != 1 && args[0] != 2) {
+        printf("ERROR: Invalid pattern '%d'. Valid patterns are 1 or 2.\n", args[0]);
+        return;
+    }
+    set_led_strip_pattern((uint8_t)args[0]);
+    printf("LED strip pattern set to %d\n", args[0]);
+}
+
 // Command definitions
 static const cmd_entry_t sensor_commands[] = {
     { .name = "temp", .handler = mock_temp, .num_args = 2, },
     { .name = "humid", .handler = mock_humid, .num_args = 2, },
     { .name = "mock", .handler = mock_sens, .num_args = 1, },
     { .name = "unit", .handler = set_unit, .num_args = 1, },
+    { .name = "pattern", .handler = set_pattern, .num_args = 1, },
 };
 
 void commands_init(void)
