@@ -9,6 +9,7 @@
 
 #define SDA_PIN 4
 #define SCL_PIN 5
+#define SENSOR_TIMEOUT_US 1500000
 
 static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
@@ -20,7 +21,10 @@ volatile absolute_time_t prev_time;
  *
  * @details This callback function sets the sensor_data_ready flag 
  * to inform the main loop that it should read temperature and humidity values.
- * A sensor read is not performed in this function due to i2c conflicts
+ * A sensor read can not be performed in this function due the irq and the sensor read
+ * using the same i2c bus leading to bus contention conflicts
+ * instead a global flag will be set during this callack and the main loop will poll 
+ * for this flag and only read sensor data once the flag is set.
  * 
  * @param t the repeating timer for the callback
  */
@@ -68,9 +72,10 @@ int main()
 
         // error check sensor irq
         int64_t diff_us = absolute_time_diff_us(prev_time, get_absolute_time());
-        if (diff_us > 1500000)
+        if (diff_us > SENSOR_TIMEOUT_US)
         {
             printf("Timer stalled\n");
+            prev_time = get_absolute_time();
         }
 
         if(sensor_data_ready)
@@ -84,7 +89,7 @@ int main()
 
             ui_update(humidity, temp_display, unit[0]); // Third param is to pass unit symbol (e.g. 'C' or 'F')
 
-            sensor_data_ready = false;
+            sensor_data_ready = false;      // unset the flag to avoid constant reads
         }
 
         sleep_ms(1);
