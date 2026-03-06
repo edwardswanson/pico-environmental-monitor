@@ -32,6 +32,7 @@ add_executable(lcd_demo
     src/app/ui.c
     src/app/sensor_task.c
     src/interfaces/command_interface.c
+    src/interfaces/commands.c
     src/drivers/led_strip.c
     src/interfaces/parse.c
 )

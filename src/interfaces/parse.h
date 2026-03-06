@@ -14,7 +14,6 @@ typedef struct
     char cmd[CMD_MAX_LEN];
     int32_t args[CMD_MAX_ARGS];
     uint8_t num_args;
-    bool valid;
 } parsed_cmd_t;
 
 bool parse_line(char* cmd_line, parsed_cmd_t* parsed_cmd);

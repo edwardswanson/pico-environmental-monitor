@@ -122,6 +122,11 @@ void cmd_process(void)
 
         cmd_line[cmd_line_pos++] = c;
     }
+
+    if (chars_processed >= CMD_BUFFER_SIZE)
+    {
+        printf("ERROR: Command too long, max %d characters\n", CMD_BUFFER_SIZE - 1);
+    }
 }
 
 /**

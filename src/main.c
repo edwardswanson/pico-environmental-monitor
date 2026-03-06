@@ -3,7 +3,7 @@
 #include "hardware/i2c.h"
 #include "drivers/dht20.h"
 #include "interfaces/command_interface.h"
-#include "interfaces/commands.c"
+#include "interfaces/commands.h"
 #include "drivers/lcd_pcf8574.h"
 #include "app/ui.h"
 #include "app/sensor_task.h"

@@ -1,7 +1,7 @@
+#include "commands.h"
 #include "command_interface.h"
 #include "../app/sensor_task.h"
 #include "../app/ui.h"
-#include <stdio.h>
 
 static void mock_temp(const int32_t args[])
 {
@@ -29,7 +29,8 @@ static void mock_sens(const int32_t args[])
 {
     set_mock_sensor(args[0]);
     
-    printf("OK: Mock mode disabled (using real sensor)\n");
+    const char* status = args[0] ? "enabled" : "disabled";
+    printf("OK: Mock mode %s\n", status);
 }
 
 static void set_unit(const int32_t args[])

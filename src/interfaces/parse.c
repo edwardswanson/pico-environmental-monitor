@@ -47,6 +47,11 @@ bool parse_line(char* cmd_line, parsed_cmd_t* parsed_cmd)
     // save first token in cmd_line
     if (token != NULL)
     {
+        if (strlen(token) >= CMD_MAX_LEN)
+        {
+            printf("WARNING: command needs to be less than %d characters\n", CMD_MAX_LEN);
+            return false;
+        }
         strncpy(parsed_cmd->cmd, token, CMD_MAX_LEN);
     }
     
