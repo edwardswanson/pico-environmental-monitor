@@ -10,6 +10,7 @@
 
 #define SDA_PIN 4
 #define SCL_PIN 5
+#define SENSOR_TIMEOUT_US 1500000
 
 static bool sensor_data_ready = false;
 static struct repeating_timer sensor_timer;
@@ -42,7 +43,6 @@ int main()
     ui_init();
     ui_startup();
 
-
     sleep_ms(1200);
 
     while (true)
@@ -52,7 +52,7 @@ int main()
 
         // error check sensor irq
         int64_t diff_us = absolute_time_diff_us(prev_time, get_absolute_time());
-        if (diff_us > 1500000)
+        if (diff_us > SENSOR_TIMEOUT_US)
         {
             printf("Timer stalled\n");
         }
