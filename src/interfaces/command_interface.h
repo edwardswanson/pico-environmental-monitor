@@ -1,26 +1,22 @@
-#ifndef COMMAND_INTERFACE_H
-#define COMMAND_INTERFACE_H
+#pragma once
 
-// Temperature unit enum
-typedef enum
-{
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT
-} temp_unit_t;
+#include <stdbool.h>
+#include <stdint.h>
 
-// Initialize LCD interface
-void lcd_interface_init(void);
+// Maximum number of arguments for a command
+#define CMD_BUFFER_SIZE 128
+#define MAX_COMMANDS 32
 
-// Check for and process incoming serial commands (call from main loop)
-void lcd_interface_update(void);
+// Command handler function type
+typedef void (*cmd_handler_t)(const int32_t* args);
 
-// Get current temperature unit setting
-temp_unit_t lcd_interface_get_temp_unit(void);
+// Command table entry
+typedef struct {
+    const char* name;           // Command name (e.g., "mock_temp")
+    cmd_handler_t handler;      // Function to call
+    uint8_t num_args;      // Number of arguments expected
+} cmd_entry_t;
 
-// Convert temperature based on current unit
-float lcd_interface_convert_temp(float celsius);
-
-// Get unit symbol string
-const char *lcd_interface_get_unit_symbol(void);
-
-#endif // COMMAND_INTERFACE_H
+void cmd_init(void);
+void cmd_process(void);
+void cmd_register(const cmd_entry_t* command);

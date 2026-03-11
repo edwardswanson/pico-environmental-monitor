@@ -7,3 +7,4 @@
 void ui_init(void);
 void ui_startup(void);
 void ui_update(float humidity, float temp, char temp_unit);
+void set_led_strip_pattern(uint8_t pattern);

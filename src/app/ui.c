@@ -83,6 +83,10 @@ static void update_lcd(float humidity, float temp, char temp_unit)
 // *************************LED STRIP***********************************
 static uint8_t curr_led_pattern = 2;  // 1 = light all same color, 2 = progressive fill
 
+void set_led_strip_pattern(uint8_t pattern) {
+    curr_led_pattern = pattern;
+}
+
 /**
  * @brief Get WS2812 color from temperature value
  * @param temp Temperature in Fahrenheit
